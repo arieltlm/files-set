@@ -1,5 +1,20 @@
 # Homebrew 安装
 
+
+下面这个命令比较快好使，选择中科大的；
+
+```bash
+/bin/zsh -c "$(curl -fsSL https://gitee.com/cunkai/HomebrewCN/raw/master/Homebrew.sh)"
+```
+
+[苹果M1 Mac上怎样使用Homebrew？](https://www.jianshu.com/p/ef3d53a9f0b0)
+
+[Apple Mac M1芯片 使用问题汇总](https://www.jianshu.com/p/c1c1e0e52391)
+
+[M1 Mac安装 Homebrew](https://blog.csdn.net/csdn2314/article/details/110952637)这个方法我没有使用，因为初始已经按照原来的方法装在usr路径下了，用了上面两个链接的方法处理了；
+
+***
+下面这个我开始使用的，也好使——
 【引用-侵权可删】：[mac下镜像飞速安装Homebrew教程-知乎](https://zhuanlan.zhihu.com/p/90508170)
 
 Homebrew是一款包管理工具，目前支持`macOS`和`linux`系统。主要有四个部分组成: `brew`、`homebrew-core` 、`homebrew-cask`、`homebrew-bottles`
