@@ -2,6 +2,8 @@
 
 [toc]
 
+[官方vscode setting说明](https://code.visualstudio.com/docs/getstarted/settings)
+
 # 1.eslint相关
 
 ## 1).suggestionActions
