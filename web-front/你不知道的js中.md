@@ -1,5 +1,18 @@
 [toc]
 
+## 1.数组
+
+* 1.使用delete可以删数组元素，但是数组长度不变
+
+  ```js
+  const arr = [1,2,3]
+  delete arr[1]
+  
+  arr // [1,empty,3]
+  ```
+
+  
+
 ## 2.3 数字
 
 * 1、特别大和特别小的数字默认用指数格式显示，与 toExponential() 函数的输出结果相同
@@ -147,3 +160,60 @@
   ```
 
   
+
+# 4.强制类型转换
+
+### 4.2.1 toString()
+
+对普通对象来说，除非自行定义，否则 toString()(Object.prototype.toString())返回 内部属性 [[Class]] 的值，如 "[object Object]";
+
+```js
+Object.prototype.toString.call([]) // "[object Array]"
+```
+
+### 4.2.2 JSON 字符串化
+
+JSON.stringify(..) 并不是强制类型转换;
+
+所有安全的 JSON 值(JSON-safe)都可以使用 JSON.stringify(..) 字符串化；
+
+`undefined`、`function`、`symbol (ES6+)`和包含循环引用(对象之间相互引用，形成一个无限循环)的对象都不符合 JSON结构标准，支持 JSON 的语言无法处理它们
+
+***
+
+很多人误以为 toJSON() 返回的是 JSON 字符串化后的值，其实不然，除非我们确实想要对 字符串进行字符串化(通常不会!)。toJSON() 返回的应该是一个适当的值，可以是任何 类型，然后再由 JSON.stringify(..) 对其进行字符串化。
+
+也就是说，toJSON() 应该“返回一个能够被字符串化的安全的 JSON 值”，而不是“返回 一个 JSON 字符串”。
+
+* (1)字符串、数字、布尔值和 null 的 JSON.stringify(..) 规则与 ToString 基本相同。
+*  (2) 如果传递给 JSON.stringify(..) 的对象中定义了 toJSON() 方法，那么该方法会在字符串化前调用，以便将对象转换为安全的 JSON 值。
+
+### 4.2.3 ToNumber
+
+```js
+Number(false) // 0
+Number(true)  // 1
+Number(undefined) // NaN
+Number(null) // 0
+Number('') // 0
+```
+
+ToNumber 对字符串的处理基本遵循数字常量的相关规则 / 语法
+
+### 4.2.4 ToBoolean
+
+JavaScript 中的值可以分为以下两类: 
+
+* (1) 可以被强制类型转换为 false 的值
+
+* (2) 其他(被强制类型转换为 true 的值)
+
+
+
+以下这些是假值:
+
+- undefined
+- null
+- false
+- +0、-0 和 NaN
+- ""
