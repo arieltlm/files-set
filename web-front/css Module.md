@@ -64,7 +64,7 @@ module: {
 :global {
   .link {
     color: green;
-  }m
+  }
   .box {
     color: yellow;
   }

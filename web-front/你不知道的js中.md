@@ -163,6 +163,8 @@
 
 # 4.强制类型转换
 
+## 4.2 抽象值操作
+
 ### 4.2.1 toString()
 
 对普通对象来说，除非自行定义，否则 toString()(Object.prototype.toString())返回 内部属性 [[Class]] 的值，如 "[object Object]";
@@ -217,3 +219,57 @@ JavaScript 中的值可以分为以下两类:
 - false
 - +0、-0 和 NaN
 - ""
+
+## 4.3 显示转换
+
+* 日期转换为毫秒：
+
+  ```js
+  var timestamp = +new Date()
+  var timestamp = new Date().getTime();
+  var timestamp = Date.now(); // ES5
+  ```
+
+* ~运算符（字位操作非）
+
+  字位运算只适用于32位整数
+
+  这是通过抽象操作 ToInt32 来实现的
+
+  ~x 大致等同于 -(x+1)
+
+  ```js
+  if (~a.indexOf( "ol" )) { // true
+    // 找到匹配!
+  }
+  ```
+
+* parseInt
+
+  ```js
+  parseInt( 0.000008 ); // 0 ("0" 来自于 "0.000008")
+  parseInt( 0.0000008 );// 8 ("8" 来自于 "8e-7")
+  parseInt( false, 16 );// 250 ("fa" 来自于 "false")
+  parseInt( parseInt, 16 );// 15 ("f" 来自于 "function..")
+  parseInt( "0x10" );// 16
+  parseInt( "103", 2 ); // 2
+  
+  parseInt(1/0, 19);// 18，即parseInt("Infinity", 19)，第一个字符是"I"，以19为基数 时值为 18。第二个字符 "n" 不是一个有效的数字字符，解析到此为止
+  
+  ```
+
+  
+
+## 4.4 隐式类型转换
+
+```js
+var a = {
+  valueOf: function() { return 42; },
+  toString: function() { return 4; }
+};
+a + "";         // "42"
+String( a );    // "4"
+```
+
+a + ""会对a调用valueOf()方法，然后通过ToString抽象 操作将返回值转换为字符串。而 String(a) 则是直接调用 ToString()
+
