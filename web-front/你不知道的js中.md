@@ -163,7 +163,14 @@
 
 # 4.强制类型转换
 
-## 4.2 抽象值操作
+## 4.1 类型转换
+
+类型转换发生在静态类型语言的编译阶段，而强制类型转换则发生在动态类型语言的运行时(runtime)。
+
+js中通常统称为强制类型转换：
+
+* 隐式
+* 显式
 
 ### 4.2.1 toString()
 
@@ -173,13 +180,30 @@
 Object.prototype.toString.call([]) // "[object Array]"
 ```
 
+```js
+var a = 1.07 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000;
+a.toString(); // "1.07e21"
+
+var a = [1,2,3];
+a.toString(); // "1,2,3"
+```
+
 ### 4.2.2 JSON 字符串化
 
 JSON.stringify(..) 并不是强制类型转换;
 
 所有安全的 JSON 值(JSON-safe)都可以使用 JSON.stringify(..) 字符串化；
 
-`undefined`、`function`、`symbol (ES6+)`和包含循环引用(对象之间相互引用，形成一个无限循环)的对象都不符合 JSON结构标准，支持 JSON 的语言无法处理它们
+`undefined`、`function`、`symbol (ES6+)`【忽略】和包含循环引用(对象之间相互引用，形成一个无限循环)【报错】的对象都不符合 JSON结构标准，支持 JSON 的语言无法处理它们
+
+```js
+JSON.stringify( undefined ); 		// undefined
+JSON.stringify( function(){} ); // undefined
+JSON.stringify([1,undefined,function(){},4]);		// "[1,null,null,4]"
+JSON.stringify({ a:2, b:function(){} }) // "{\"a\":2}"
+```
+
+
 
 ***
 
@@ -198,6 +222,8 @@ Number(true)  // 1
 Number(undefined) // NaN
 Number(null) // 0
 Number('') // 0
+Number( [] ); // 0
+Number( [ "abc" ] ); // NaN
 ```
 
 ToNumber 对字符串的处理基本遵循数字常量的相关规则 / 语法
@@ -220,46 +246,64 @@ JavaScript 中的值可以分为以下两类:
 - +0、-0 和 NaN
 - ""
 
-## 4.3 显示转换
+## 4.3 显式强制类型转换
 
-* 日期转换为毫秒：
+### 4.3.1 字符串和数字转换
+
+* `String(a)`
+
+* `Number(b)`
+
+* `a.toString()`
+
+* `+c`
+
+* 日期转换成数字
 
   ```js
-  var timestamp = +new Date()
-  var timestamp = new Date().getTime();
-  var timestamp = Date.now(); // ES5
+  var d = new Date()
+  +d // 1621417468385
+  
+  new Date().getTime() // 1621417468385
+  // ES5方法
+  Date.now()  // 1621417468385
   ```
 
-* ~运算符（字位操作非）
+  提倡使用 Date.now() 来获得当前的时间戳，使用 new Date(..).getTime() 来获得指定时间的时间戳
 
-  字位运算只适用于32位整数
+* `~`运算符
 
-  这是通过抽象操作 ToInt32 来实现的
+  位运算符只适于32位整数；这是通过抽象操作 ToInt32 来实现的；
 
-  ~x 大致等同于 -(x+1)
+  ToInt32 首先执行 ToNumber 强制类型转换，比如 "123" 会先被转换为 123，然后再执行 ToInt32
+
+  **~ 返回 2 的补码**：~x 大致等同于 -(x+1)
 
   ```js
-  if (~a.indexOf( "ol" )) { // true
-    // 找到匹配!
+  ~ -1 //0
+  
+  var a = "Hello World";
+  if (~a.indexOf( "lo" )) { // 找到匹配!
   }
   ```
 
-* parseInt
+
+* `~~`运算符:字位截除
+
+  它对负数的处理与 Math. floor(..) 不同
+
+  ~~ 中的第一个 ~ 执行 ToInt32 并反转字位，然后第二个 ~ 再进行一次字位反转，即将所有 字位反转回原值，最后得到的仍然是 ToInt32 的结果。
+
+  ~~x 能将值截除为一个 32 位整数
 
   ```js
-  parseInt( 0.000008 ); // 0 ("0" 来自于 "0.000008")
-  parseInt( 0.0000008 );// 8 ("8" 来自于 "8e-7")
-  parseInt( false, 16 );// 250 ("fa" 来自于 "false")
-  parseInt( parseInt, 16 );// 15 ("f" 来自于 "function..")
-  parseInt( "0x10" );// 16
-  parseInt( "103", 2 ); // 2
+  Math.floor( -49.6 );    // -50
+  ~~-49.6;                // -49
   
-  parseInt(1/0, 19);// 18，即parseInt("Infinity", 19)，第一个字符是"I"，以19为基数 时值为 18。第二个字符 "n" 不是一个有效的数字字符，解析到此为止
-  
+  Math.floor( 49.6 );    // 49
+  ~~49.6;                // 49
   ```
-
   
-
 ## 4.4 隐式类型转换
 
 ```js
@@ -272,4 +316,4 @@ String( a );    // "4"
 ```
 
 a + ""会对a调用valueOf()方法，然后通过ToString抽象 操作将返回值转换为字符串。而 String(a) 则是直接调用 ToString()
-
+  
