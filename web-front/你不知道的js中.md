@@ -303,17 +303,218 @@ JavaScript 中的值可以分为以下两类:
   Math.floor( 49.6 );    // 49
   ~~49.6;                // 49
   ```
-  
 ## 4.4 隐式类型转换
 
+### 4.4.2 字符串和数字
+
+* `+` 操作符
+
+  a + b
+
+  如果a或b是字符串，那么执行拼接操作
+
+  如果其中一个操作数是对象(包括数组)，则首先对其调用 ToPrimitive 抽象操作(规范 9.1 节)，该抽象操作再调用 [[DefaultValue]]，以数字作为上下文；
+
+  ```js
+  var a = {
+    valueOf: function() { return 42; },
+    toString: function() { return 4; }
+  };
+  a + "";         // "42"
+  String( a );    // "4"
+  ```
+
+  a + ""会对a调用valueOf()方法，然后通过ToString抽象 操作将返回值转换为字符串。而 String(a) 则是直接调用 ToString()
+
+
+
+* `-`，`/`，`*`
+
+  这三个都是用于数字的运算符，所以会先转为数字再做运算
+
+​	
+
+### 4.4.5 `||` 和`&&`
+
+* || ：如果条件判断结果为 true 就返回第一个操作数的值，如果为 false 就返回第二个操作数的值
+
+* &&：如果条件判断结果为 true 就返回第二个操作数的值，如果为 false 就返回第一个操作数的值
+
+### 4.4.6 `symbol`的强制类型转换
+
+符号不能够被强制类型转换为数字(显式和隐式都会产生错误)，但可以被强制类型转换 为布尔值(显式和隐式结果都是 true)
+
+### 4.5 == 和 ===
+
+== 允许在相等比较中进行强制类型转换，而 === 不允许。
+
 ```js
-var a = {
-  valueOf: function() { return 42; },
-  toString: function() { return 4; }
-};
-a + "";         // "42"
-String( a );    // "4"
+NaN == NaN // false
++0 === -0 // true
 ```
 
-a + ""会对a调用valueOf()方法，然后通过ToString抽象 操作将返回值转换为字符串。而 String(a) 则是直接调用 ToString()
+* 字符串和数字之间的宽松相等比较:
+
+  将字符串的值转为数字去和另一数字比较
+
+* 数字和布尔值之间的宽比较：
+
+  将为布尔的值转成0或者1去和另一个数字比较
+
+* `null`和`undefined`
+
+  ```js
+  null == undefined
+  undefined == null
+  ```
+
+  ```js
+  var a = null;
+  var b;
+  a == b;     // true
+  a == null;  // true
+  b == null;  // true
+  a == false; // false
+  b == false; // false
+  a == ""; // false
+  b == ""; // false
+  a == 0;  // false
+  b == 0;  // false
+  ```
+
+* 对象和非对象的转换
+
+  将对象使用ToPrimitive转换去与另一个字符串/数字比较
+
+  ```js
+  var a = 'abc'
+  var b = Object(a)
   
+  a == b // true
+  ```
+
+  ```js
+  var a = null;
+  var b = Object( a ); // 和Object()一样
+  a == b;  // false
+  var c = undefined;
+  var d = Object( c ); // 和Object()一样
+  c == d; // false
+  var e = NaN;
+  var f = Object( e ); // 和new Number( e )一样
+  e == f; // false
+  ```
+
+* 少见的情况
+
+  ```js
+  Number.prototype.valueOf = function() {
+    return 3;
+  };
+  new Number( 2 ) == 3;   // true
+  ```
+
+  ```js
+  var i = 2;
+       Number.prototype.valueOf = function() {
+           return i++;
+  };
+       var a = new Number( 42 );
+       if (a == 2 && a == 3) {
+           console.log( "Yep, this happened." );
+  }
+  ```
+
+  ```js
+  "0" == null;        // false
+  "0" == undefined;   // false
+  "0" == false;       // true ! (字符串与布尔比较，布尔转为数字)
+  "0" == NaN;         // false  (字符串和数字比较，字符串转为数字，0和NaN不相等)
+  "0" == 0;           // true
+  "0" == "";          // false
+  
+  false == null;      // false
+  false == undefined; // false
+  false == NaN;       // false
+  false == 0;         // true ! (字符串与布尔比较，布尔转为数字0)
+  false == "";        // true ！(字符串与布尔比较，布尔转为数字0，数字和字符串比较，字符串''转为数字0)
+  false == [];        // true ！(对象和布尔比较，布尔转为数字0，对象ToPrimitive([])为""，再转为数字0）
+  false == {};        // false
+  
+  "" == null;         // false
+  "" == undefined;    // false
+  "" == NaN;          // false
+  "" == 0;            // true ！
+  "" == [];           // true ！
+  "" == {};           // false
+  
+  0 == null;          // false
+  0 == undefined;     // false
+  0 == NaN;           // fasle
+  0 == [];            // true ！
+  0 == {};            // false
+  ```
+
+  ```js
+  [] == ![] // true
+  ```
+
+  ```js
+  2 == [2];       // true (数字和对象比较，数组ToPrimitive为'2',再转为数字2)
+  "" == [null];   // true （[null]ToPrimitive为''）
+  ```
+
+  ```js
+  0 == "\n"; //""、"\n"(或者 " " 等其他空格组合)等空字符串被 ToNumber 强制类型转换为 0
+  ```
+
+* 安全运用隐式强制类型转换
+
+  - 如果两边的值中有 true 或者 false，千万不要使用 ==。
+  - 如果两边的值中有 []、"" 或者 0，尽量不要使用 ==
+
+  ### 4.6 抽象关系比较
+
+  不要使用对象进行比较！
+
+  记录个神奇的：
+
+  ```js
+  var a = { b: 42 };
+  var b = { b: 43 };
+  
+  a < b;  // false
+  a == b; // false
+  a > b;  // false
+  a <= b; // true  因为根据规范a <= b被处理为b < a，然后将结果反转。因为b < a的结果是false，所以 a <= b 的结果是 true。
+  a >= b; // true
+  ```
+
+  
+
+### 【ToPrimitive扩展】
+
+> **应用场景：**在JavaScript中，如果想要将对象转换成基本类型时，也就是所谓的拆箱时，会调用toPrimitive()。
+>
+> **函数结构：**toPrimitive(input,preferedType?)
+>
+> **参数解释：**
+>
+> input是输入的值，即要转换的对象，必选；
+>
+> preferedType是期望转换的基本类型，他可以是字符串，也可以是数字。选填，默认为number；
+>
+> **执行过程：**
+>
+> 如果转换的类型是number，会执行以下步骤：
+>
+> 1. 如果input是原始值，直接返回这个值；
+> 2.  否则，如果input是对象，调用input.valueOf()，如果结果是原始值，返回结果；
+>
+> 3. 否则，调用input.toString()。如果结果是原始值，返回结果；
+>
+> 4. 否则，抛出错误。
+>
+> 如果转换的类型是String，2和3会交换执行，即先执行toString()方法。
+>
+> 你也可以省略preferedType，此时，日期会被认为是字符串，而其他的值会被当做Number
