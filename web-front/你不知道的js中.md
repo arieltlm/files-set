@@ -1,6 +1,22 @@
 [toc]
 
-## 1.数组
+# 1.类型
+
+## 1.2 内置类型
+
+JavaScript 有七种内置类型:
+
+- 空值(null)
+- 未定义(undefined)
+- 布尔值( boolean)
+- 数字(number)
+- 字符串(string)
+- 对象(object)
+- 符号(symbol，ES6 中新增)
+
+# 2.值
+
+## 2.1 数组
 
 * 1.使用delete可以删数组元素，但是数组长度不变
 
@@ -11,9 +27,8 @@
   arr // [1,empty,3]
   ```
 
-  
 
-## 2.3 数字
+## 2.3  数字
 
 * 1、特别大和特别小的数字默认用指数格式显示，与 toExponential() 函数的输出结果相同
 
@@ -100,9 +115,22 @@
   Number.isNaN( a ); // true Number.isNaN( b ); // false——好!
   ```
 
-  
 
-## 3.原生函数
+## 2.4 Object.is
+
+```js
+Object.is(NaN,NaN) // true
+```
+
+```js
+-0 === 0 // true
+-0 === +0 // true
+Object.is(-0,0) // false
+```
+
+
+
+# 3.原生函数
 
 * 常见的原生函数：
 
@@ -763,3 +791,83 @@ JavaScript 中有很多错误类型，分为两大类:早期错误(编译时错�
 finally 中的代码总是会在 try 之后执行，如果有 catch 的话则在 catch 之后执行。也可以将 finally 中的代码看作一个回调函数，即无论出现什么情况最后一定会被调用。
 
 `try...finally`放在函数里面时，`try`中有return或者抛出错误，执行函数时，依然会先执行finally中的内容，如果finally中有return或者抛出错误的话，就会直接先return finally中，就不会再走try中了；
+
+```js
+function foo() {
+    try {
+        return 42;
+    }
+    finally {
+        console.log( "Hello" );
+        console.log( "never runs" );
+    }
+}
+console.log( foo() );
+// Hello
+// 42
+
+function foo() {
+    try {
+        throw 42; }
+    finally {
+        console.log( "Hello" );
+    }
+}
+console.log( "never runs" );
+console.log( foo() );
+// Hello
+// Uncaught Exception: 42
+
+function foo() {
+    try {
+        return 42;
+    }
+    finally {
+        throw "Oops!";
+        console.log( "never runs" );
+    }
+}
+console.log( foo() );
+// Uncaught Exception: Oops!
+
+for (var i=0; i<10; i++) {
+    try {
+        continue; 
+    }
+    finally {
+        console.log( i );
+    } 
+}
+// 0 1 2 3 4 5 6 7 8 9
+
+function baz() {
+    try {
+        return 42;
+    }
+    finally {
+        return "Hello"; // 覆盖前面的 return 42 
+    } 
+}
+console.log(baz());  // Hello
+```
+
+## 5.7 switch
+
+`switch`中匹配方法是`===`
+
+也可使用`==`比较：
+
+```js
+var a = '42'
+switch (true) {
+    case a == 10:
+            console.log( "10 or '10'" );
+            break;
+    case a == 42:
+            console.log( "42 or '42'" );
+            break;
+    default:
+}
+// 42 or '42'
+```
+
