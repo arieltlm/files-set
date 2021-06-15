@@ -1,6 +1,22 @@
 [toc]
 
-## 1.数组
+# 1.类型
+
+## 1.2 内置类型
+
+JavaScript 有七种内置类型:
+
+- 空值(null)
+- 未定义(undefined)
+- 布尔值( boolean)
+- 数字(number)
+- 字符串(string)
+- 对象(object)
+- 符号(symbol，ES6 中新增)
+
+# 2.值
+
+## 2.1 数组
 
 * 1.使用delete可以删数组元素，但是数组长度不变
 
@@ -11,9 +27,8 @@
   arr // [1,empty,3]
   ```
 
-  
 
-## 2.3 数字
+## 2.3  数字
 
 * 1、特别大和特别小的数字默认用指数格式显示，与 toExponential() 函数的输出结果相同
 
@@ -100,9 +115,22 @@
   Number.isNaN( a ); // true Number.isNaN( b ); // false——好!
   ```
 
-  
 
-## 3.原生函数
+## 2.4 Object.is
+
+```js
+Object.is(NaN,NaN) // true
+```
+
+```js
+-0 === 0 // true
+-0 === +0 // true
+Object.is(-0,0) // false
+```
+
+
+
+# 3.原生函数
 
 * 常见的原生函数：
 
@@ -325,8 +353,24 @@ JavaScript 中的值可以分为以下两类:
   ```
 
   a + ""会对a调用valueOf()方法，然后通过ToString抽象 操作将返回值转换为字符串。而 String(a) 则是直接调用 ToString()
+  
+  
+  
+  
+  
+  ```js
+  [] + {} // "[object Object]"
+  ```
+  
+  {} 出现在 + 运算符表达式中，因此它被当作一个值(空对象)来处理。第4 章讲过 [] 会被强制类型转换为 ""，而 {} 会被强制类型转换为 "[object Object]"
+  
+  ```js
+  {} + [] // 0
+  ```
+  
+  {} 被当作一个独立的空代码块(不执行任何操作)。代码块结尾不需 要分号，所以这里不存在语法上的问题。最后 + [] 将 [] 显式强制类型转换(参见第 4 章) 为 0。
 
-
+ 	
 
 * `-`，`/`，`*`
 
@@ -518,3 +562,312 @@ NaN == NaN // false
 > 如果转换的类型是String，2和3会交换执行，即先执行toString()方法。
 >
 > 你也可以省略preferedType，此时，日期会被认为是字符串，而其他的值会被当做Number
+
+
+
+# 5. 语法
+
+
+
+## 5.1 语句和表达式
+
+###  5.1.2 表达式的副作用
+
+* ++ 
+
+  ```js
+  var a = 42;
+  var b = a++;
+  a;  // 43
+  b;  // 42
+  ```
+
+  ++ 在前面时，++a，它的副作用(将 a 递增)产生在表达式返回结果值之前，而 a++ 的 副作用则产生在之后。
+
+  ```js
+  var a = 42, b;
+  b = ( a++, a ); // 语句系列逗号运算符将多个独立的表达式语句串联成一个语句
+  a;  // 43
+  b;  // 43
+  ```
+
+  
+
+### 5.1.3 上下文规则
+
+* **标签语句**
+
+  `foo:bar()`
+
+  **带标签的循环 / 代码块十分少见，也不建议使用。**
+
+  continue 和 break 语句都可以带 一个标签，因此能够像 goto 那样进行跳转;
+
+  ```js
+  console.log('=========continue==========');
+  for (var i=0; i<4; i++) {
+      for (var j=0; j<4; j++) {
+          // 如果j和i相等，继续内层循环(没有标签的)
+          if (j == i) {
+              // 继续内层循环
+              continue ;
+          }
+          // 跳过奇数结果
+          if ((j * i) % 2 == 1) {
+              // 继续内层循环(没有标签的)
+              continue; 
+          }
+          console.log( i, j );
+      }
+  }
+  // 得到：
+  0 1
+  0 2
+  0 3
+  1 0
+  1 2
+  2 0
+  2 1
+  2 3
+  3 0
+  3 2
+  console.log('=========continue foo==========');
+  foo:for (var i=0; i<4; i++) {
+      for (var j=0; j<4; j++) {
+          // 如果j和i相等，继续外层循环 
+          if (j == i) {
+              // 跳转到foo的下一个循环
+              continue foo;
+          }
+          // 跳过奇数结果
+          if ((j * i) % 2 == 1) {
+              // 继续内层循环(没有标签的)
+              continue; 
+          }
+          console.log( i, j );
+      }
+  }
+  // 得到：
+  1 0
+  2 0
+  2 1
+  3 0
+  3 2
+  console.log('=========break==========');
+  for (var i=0; i<4; i++) {
+      for (var j=0; j<4; j++) {
+          // 如果j和i相等，继续外层循环 
+          if (j == i) {
+              // 跳转到foo的下一个循环
+              break ;
+          }
+          // 跳过奇数结果
+          if ((j * i) % 2 == 1) {
+              // 继续内层循环(没有标签的)
+              continue; 
+          }
+          console.log( i, j );
+      }
+  }
+  // 得到：
+  1 0
+  2 0
+  2 1
+  3 0
+  3 2
+  ```
+
+  上述代码可以看出：此处的`continue foo`和`break`的作用一样，都是跳出本循环，到外层循环。`continue`是直接跳过此条件，继续内部的循环；
+
+  ```js
+  console.log('=========break==========');
+  
+  for (var i=0; i<4; i++) {
+      for (var j=0; j<4; j++) {
+          // 如果(i * j) >= 3，继续外层循环 
+          if ((i * j) >= 3) {
+              console.log( "stopping!", i, j );
+              // 跳转到foo的下一个循环
+              break; 
+          }
+          console.log( i, j );
+      }
+  }
+  // 得到：
+  0 0
+  0 1
+  0 2
+  0 3
+  1 0
+  1 1
+  1 2
+  stopping! 1 3
+  2 0
+  2 1
+  stopping! 2 2
+  3 0
+  stopping! 3 1
+  
+  console.log('==========break foo=========');
+  
+  foo:for (var i=0; i<4; i++) {
+      for (var j=0; j<4; j++) {
+          if ((i * j) >= 3) {
+              console.log( "stopping!", i, j );
+              // 跳出标签 foo 所在的循环 / 代码块，继续执行后面的代码
+              break foo; 
+          }
+          console.log( i, j );
+      }
+  }
+  // 得到：
+  0 0
+  0 1
+  0 2
+  0 3
+  1 0
+  1 1
+  1 2
+  stopping! 1 3
+  ```
+
+  上述可以看出，`break foo`是跳出标签所在的循环/代码块，继续后面的代码。不带标签的`break`是跳出内部循环，执行外部循环；👍
+
+  ```js
+  // 一般的代码块也可以用标签，可用break
+  function foo() {
+      bar: {
+          console.log( "Hello" );
+          break bar;
+          console.log( "never runs" );
+      }
+      console.log( "World" );
+  }
+  foo()
+  // 得到：
+  Hello
+  World
+  ```
+
+  
+
+* `else if`
+
+  事实上`javascript`没有`else if`，但 if 和 else 只包含单条语句的时候可以省略代码块的 { }；
+
+  else 中是一个单独的 if 语句；
+
+  else if极为常见，能省掉一层代码缩进，所以很受青睐。但这只是我们自己发明的用法，
+
+  切勿想当然地认为这些都属于 JavaScript 语法的范畴
+
+## 5.2 运算符优先级
+
+* 用`,`来连接一系列语句的时候，它的优先级最低
+* `&&`比`=`的优先级高
+* `&&`比`||`的优先级高，`||`比`?:`的优先级高
+* 多个相同优先级的运算符同时出现时，需要注意运算符的关联：
+  * `&&`和`||`都是左关联，`a && b && c`会被处理成`(a && b) && c`
+  * `?:`是右关联，`a ? b : c ? d : e`会被处理成`a ? b : (c ? d : e)`
+  * `=`是右关联，`a = b = c = 42`会被处理成`a = (b = (c = 42))`
+
+## 5.3 自动分号插入（ASI）
+
+## 5.4 错误
+
+JavaScript 中有很多错误类型，分为两大类:早期错误(编译时错误，无法被捕获)和运 行时错误(可以通过 try..catch 来捕获)。所有语法错误都是早期错误，程序有语法错误 则无法运行；
+
+**暂时性死区**（TDZ）：指的是由于代码中的变量还没有初始化而不能被引用的情况（ES6）；
+
+```js
+{
+   a = 2;      // ReferenceError!
+   let a;
+}
+```
+
+## 5.6 try..finally
+
+finally 中的代码总是会在 try 之后执行，如果有 catch 的话则在 catch 之后执行。也可以将 finally 中的代码看作一个回调函数，即无论出现什么情况最后一定会被调用。
+
+`try...finally`放在函数里面时，`try`中有return或者抛出错误，执行函数时，依然会先执行finally中的内容，如果finally中有return或者抛出错误的话，就会直接先return finally中，就不会再走try中了；
+
+```js
+function foo() {
+    try {
+        return 42;
+    }
+    finally {
+        console.log( "Hello" );
+        console.log( "never runs" );
+    }
+}
+console.log( foo() );
+// Hello
+// 42
+
+function foo() {
+    try {
+        throw 42; }
+    finally {
+        console.log( "Hello" );
+    }
+}
+console.log( "never runs" );
+console.log( foo() );
+// Hello
+// Uncaught Exception: 42
+
+function foo() {
+    try {
+        return 42;
+    }
+    finally {
+        throw "Oops!";
+        console.log( "never runs" );
+    }
+}
+console.log( foo() );
+// Uncaught Exception: Oops!
+
+for (var i=0; i<10; i++) {
+    try {
+        continue; 
+    }
+    finally {
+        console.log( i );
+    } 
+}
+// 0 1 2 3 4 5 6 7 8 9
+
+function baz() {
+    try {
+        return 42;
+    }
+    finally {
+        return "Hello"; // 覆盖前面的 return 42 
+    } 
+}
+console.log(baz());  // Hello
+```
+
+## 5.7 switch
+
+`switch`中匹配方法是`===`
+
+也可使用`==`比较：
+
+```js
+var a = '42'
+switch (true) {
+    case a == 10:
+            console.log( "10 or '10'" );
+            break;
+    case a == 42:
+            console.log( "42 or '42'" );
+            break;
+    default:
+}
+// 42 or '42'
+```
+
