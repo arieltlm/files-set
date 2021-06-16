@@ -108,7 +108,7 @@ export default { add, print }
 
 比如说Webpack5.0默认设置中认为样式文件是有副作用的，所以引入样式文件虽然没有被使用（样式文件肯定是不使用的）也不会被去除，但是如果设置了sideEffects：false，就会进行Tree Shaking将代码去除。
 
-## 5. webpack5 的静态资源不需要再加载loader了，内置好了
+## 4. webpack5 的静态资源不需要再加载loader了，内置好了
 
 ```js
  /* 
@@ -146,7 +146,7 @@ export default { add, print }
 
 以上五点参考[Webpack5.0学习总结-基础篇](https://juejin.cn/post/6971743815434993671)
 
-## 6.使用`webapck-dev-server`启动项目报错
+## 5.使用`webapck-dev-server`启动项目报错
 
 **Error: Cannot find module 'webpack-cli/bin/config-yargs'**
 
@@ -160,7 +160,7 @@ export default { add, print }
 
 webpack5.x和webpack-dev-server3.x不应该使用`webpack-dev-server`启动项目，而应该使用`webpack serve --open`启动项目
 
-## 7.模块热替换HRM
+## 6.模块热替换HRM
 
 ```js
 devServer: {
@@ -169,5 +169,20 @@ devServer: {
 },
   // 注意：Webpack升级到5.0后，target默认值值会根据package.json中的browserslist改变，导致devServer的自动更新失效。所以development环境下直接配置成web。
   target: "web",
+```
+
+## 7.书写loader时获取options参数
+
+之前使用loader-utils包来获取；webpack5开始使用`this.getOptions()`
+
+```js
+// 之前使用loader-utils包来获取
+const loaderUtils = require('loader-utils');
+module.exports = function(source) {
+  const options = loaderUtils.getOptions(this);
+  // webpack5开始使用this.getOptions()
+  const options5 = this.getOptions()
+  return source;
+};
 ```
 
