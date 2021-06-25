@@ -1,5 +1,7 @@
 # Webpack 5相对于4变化
 
+[Webpack 5 发布公告 (2020-10-10)](https://webpack.docschina.org/blog/2020-10-10-webpack-5-release/)
+
 ## 1.rules中使用oneOf
 
 默认情况下，文件会去匹配rules下面的每一个规则，即使已经匹配到某个规则了也会继续向下匹配。而如果将规则放在 oneOf 属性中，则一旦匹配到某个规则后，就停止匹配了
@@ -64,6 +66,30 @@ rules:[
 
 }
 ```
+
+webpack5的长效缓存很有用
+
+```js
+module.exports = {
+  cache: {
+    // 1. 将缓存类型设置为文件系统
+    type: 'filesystem',
+
+    buildDependencies: {
+      // 2. 将你的 config 添加为 buildDependency，以便在改变 config 时获得缓存无效
+      // __filename变量获取当前文件的带有完整绝对路径的文件名
+      config: [__filename],
+
+      // 3. 如果你有其他的东西被构建依赖，你可以在这里添加它们
+      // 注意，webpack、加载器和所有从你的配置中引用的模块都会被自动添加
+    },
+  },
+};
+```
+
+[Webpack 5升级内容](https://blog.csdn.net/sendudu/article/details/109712699)
+
+[Webpack5更新指南](https://www.jianshu.com/p/4e810ca6c132)
 
 ## 3.Tree Shaking(树摇)
 
@@ -185,4 +211,149 @@ module.exports = function(source) {
   return source;
 };
 ```
+
+## 8.merge
+
+```js
+// 4.x版本
+{
+  "webpack-merge": "^4.2.2"
+}
+// webpack.config.js
+const merge = require('webpack-merge')
+const defaultConfig = require('../...')
+const config = merge(defaultConfig, {
+
+})
+export default config
+
+// 5.x版本
+{
+  "webpack-merge": "^5.7.3"
+}
+const webpackMerge = require('webpack-merge')
+const defaultConfig = require('../...')
+const config = webpackMerge.merge(defaultConfig, {
+
+})
+export default config
+```
+
+## 9. webpack插件编写
+
+比如`html-webpack-plugin`如果安装的4.x版本的，就会报错：
+
+> DeprecationWarning: Compilation.assets will be frozen in future, all modifications are deprecated. BREAKING CHANGE: No more changes should happen to Compilation.assets after sealing the Compilation.
+> Do changes to assets earlier, e. g. in Compilation.hooks.processAssets.
+> Make sure to select an appropriate stage from Compilation.PROCESS_ASSETS_STAGE_
+
+```js
+// 4.x
+
+compiler.hooks.emit.tapAsync('HtmlWebpackPlugin',
+      /**
+       * Hook into the webpack emit phase
+       * @param {WebpackCompilation} compilation
+       * @param {(err?: Error) => void} callback
+      */
+      (compilation, callback) => {
+  //...
+})
+
+// 5.x
+compiler.hooks.thisCompilation.tap('HtmlWebpackPlugin',
+    /**
+       * Hook into the webpack compilation
+       * @param {WebpackCompilation} compilation
+      */
+    (compilation) => {
+      compilation.hooks.processAssets.tapAsync(
+        {
+          name: 'HtmlWebpackPlugin',
+          stage:
+          /**
+           * Generate the html after minification and dev tooling is done
+           */
+          webpack.Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_INLINE
+        },
+        /**
+         * Hook into the process assets hook
+         * @param {WebpackCompilation} compilationAssets
+         * @param {(err?: Error) => void} callback
+         */
+        (compilationAssets, callback) => {
+          // ...
+ })
+```
+
+比如我在测试时写一个很简单的插件：
+
+```js
+apply(compiler){
+  // 使用emit报警告
+  /*BREAKING CHANGE: No more changes should happen to Compilation.assets after sealing the Compilation.
+    Do changes to assets earlier, e. g. in Compilation.hooks.processAssets.
+    Make sure to select an appropriate stage from Compilation.PROCESS_ASSETS_STAGE_*.*/
+  compiler.hooks.emit.tap('AddWordPlugin', (compilation) => {
+    const {assets } = compilation
+    const content = assets['print.bundle.js'].source()
+    console.log('AddWordPlugin ', content);
+    assets['print.bundle.js'] = {
+      source() {
+        return '"build by tlm"\r\n' + content
+      },
+      size(){
+        return content.length;
+      }
+    }
+  })
+```
+
+和上面的问题一致，要处理编译的资源，不能在编译生成资源到 output 目录之前处理了，assets会被封存，需要进入compliation中进行处理；
+
+具体如何改正——正在studying
+
+## 10.node配置
+
+> 这些选项可以配置是否 polyfill 或 mock 某些 [Node.js 全局变量](https://nodejs.org/docs/latest/api/globals.html)和模块。这可以使最初为 Node.js 环境编写的代码，在其他环境（如浏览器）中运行。
+>
+> 此功能由 webpack 内部的 [`NodeStuffPlugin`](https://github.com/webpack/webpack/blob/master/lib/NodeStuffPlugin.js) 插件提供。如果 target 是 "web"（默认）或 "webworker"，那么 [`NodeSourcePlugin`](https://github.com/webpack/webpack/blob/master/lib/node/NodeSourcePlugin.js) 插件也会被激活
+
+```js
+// 4.x
+node: {
+  	console: false,
+    global: true,
+    process: true,
+    __filename: 'mock',
+    __dirname: 'mock',
+    Buffer: true,
+    setImmediate: true
+    dns: 'mock',
+    fs: 'empty',
+    path: true,
+    url: false
+}
+// 5.x
+node:{ // 5.xnode中只有这三个配置
+  global: false,
+  __filename: false,
+  __dirname: false,
+},
+resolve: {
+      fallback:{
+           module: false,
+           dgram: false,
+           dns: false,
+           fs:false,
+           http2: false,
+           net: false,
+       }
+}
+
+```
+
+**可参考文章：**
+
+[Webpack 5 升级实验](https://zhuanlan.zhihu.com/p/81122986)
 
