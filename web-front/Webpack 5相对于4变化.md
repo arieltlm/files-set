@@ -2,7 +2,18 @@
 
 [Webpack 5 发布公告 (2020-10-10)](https://webpack.docschina.org/blog/2020-10-10-webpack-5-release/)
 
-## 1.rules中使用oneOf
+# 1.webpack5整体方向
+
+这个版本的重点在于以下几点。
+
+- 尝试用持久性缓存来提高构建性能。
+- 尝试用更好的算法和默认值来改进长期缓存。
+- 尝试用更好的 Tree Shaking 和代码生成来改善包大小。
+- 尝试改善与网络平台的兼容性。
+- 尝试在不引入任何破坏性变化的情况下，清理那些在实现 v4 功能时处于奇怪状态的内部结构。
+- 试图通过现在引入突破性的变化来为未来的功能做准备，使其能够尽可能长时间地保持在 v5 版本上。
+
+## 2.rules中使用oneOf
 
 默认情况下，文件会去匹配rules下面的每一个规则，即使已经匹配到某个规则了也会继续向下匹配。而如果将规则放在 oneOf 属性中，则一旦匹配到某个规则后，就停止匹配了
 
@@ -40,7 +51,7 @@ rules:[
 
 
 
-## 2.缓存
+## 3.缓存
 
 在编译打包时可对文件做缓存，有两种方式，一种是解析文件的loader自身带有缓存功能（如babel-loader,vue-loader），第二种就是使用专门的loader（cache-loader）。
  开启缓存后，对于未改动的文件，webpack直接从缓存中读取而不用再次编译，大大加快构建速度。
@@ -91,7 +102,7 @@ module.exports = {
 
 [Webpack5更新指南](https://www.jianshu.com/p/4e810ca6c132)
 
-## 3.Tree Shaking(树摇)
+## 4.Tree Shaking(树摇)
 
 ```js
 // 入口文件index.js
@@ -134,7 +145,7 @@ export default { add, print }
 
 比如说Webpack5.0默认设置中认为样式文件是有副作用的，所以引入样式文件虽然没有被使用（样式文件肯定是不使用的）也不会被去除，但是如果设置了sideEffects：false，就会进行Tree Shaking将代码去除。
 
-## 4. webpack5 的静态资源不需要再加载loader了，内置好了
+## 5. webpack5 的静态资源不需要再加载loader了，内置好了
 
 ```js
  /* 
@@ -172,7 +183,7 @@ export default { add, print }
 
 以上五点参考[Webpack5.0学习总结-基础篇](https://juejin.cn/post/6971743815434993671)
 
-## 5.使用`webapck-dev-server`启动项目报错
+## 6.使用`webapck-dev-server`启动项目报错
 
 **Error: Cannot find module 'webpack-cli/bin/config-yargs'**
 
@@ -186,7 +197,7 @@ export default { add, print }
 
 webpack5.x和webpack-dev-server3.x不应该使用`webpack-dev-server`启动项目，而应该使用`webpack serve --open`启动项目
 
-## 6.模块热替换HRM
+## 7.模块热替换HRM
 
 ```js
 devServer: {
@@ -197,7 +208,7 @@ devServer: {
   target: "web",
 ```
 
-## 7.书写loader时获取options参数
+## 8.书写loader时获取options参数
 
 之前使用loader-utils包来获取；webpack5开始使用`this.getOptions()`
 
@@ -212,7 +223,7 @@ module.exports = function(source) {
 };
 ```
 
-## 8.merge
+## 9.merge
 
 ```js
 // 4.x版本
@@ -239,7 +250,9 @@ const config = webpackMerge.merge(defaultConfig, {
 export default config
 ```
 
-## 9. webpack插件编写
+## 10. webpack插件编写
+
+**插件的生命周期理解变化**：
 
 比如`html-webpack-plugin`如果安装的4.x版本的，就会报错：
 
@@ -313,7 +326,30 @@ apply(compiler){
 
 具体如何改正——正在studying
 
-## 10.node配置
+
+
+**插件写法的另一个变化：**
+
+```js
+// 4.x
+/**
+* 监听名称为 event-name 的事件，当 event-name 事件发生时，函数就会被执行。
+* 同时函数中的 params 参数为广播事件时附带的参数。
+*/
+compiler.plugin('event-name',function(params) {
+  
+});
+
+// 5.x
+// 必须通过hook方法了
+compiler.hooks.emit.tap('AddWordPlugin', (params) => {
+  
+})
+```
+
+
+
+## 11.node配置
 
 > 这些选项可以配置是否 polyfill 或 mock 某些 [Node.js 全局变量](https://nodejs.org/docs/latest/api/globals.html)和模块。这可以使最初为 Node.js 环境编写的代码，在其他环境（如浏览器）中运行。
 >
