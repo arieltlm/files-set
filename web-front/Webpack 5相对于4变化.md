@@ -104,6 +104,8 @@ module.exports = {
 
 ## 4.Tree Shaking(树摇)
 
+
+
 ```js
 // 入口文件index.js
 import test from "./test.js"
@@ -145,6 +147,7 @@ export default { add, print }
 
 比如说Webpack5.0默认设置中认为样式文件是有副作用的，所以引入样式文件虽然没有被使用（样式文件肯定是不使用的）也不会被去除，但是如果设置了sideEffects：false，就会进行Tree Shaking将代码去除。
 
+[官方描述-tree shaking变更](https://webpack.docschina.org/blog/2020-10-10-webpack-5-release/#nested-tree-shaking)
 ## 5. webpack5 的静态资源不需要再加载loader了，内置好了
 
 ```js
@@ -388,6 +391,25 @@ resolve: {
 }
 
 ```
+## 12.入口文件运行时
+
+入口文件描述符允许为每个入口文件指定一个 运行时代码。 当指定时，将创建一个以该名称命名的代码块，其中仅包含该条目的运行时代码。 当多个条目指定相同的运行时代码时，该块将包含所有这些入口文件的共同运行时代码。 这意味着它们可以在同一个 HTML 页面中一起使用
+
+```js
+module.exports = {
+  entry: {
+    app: {
+      import: './app.js',
+      runtime: 'app-runtime',
+    },
+  },
+};
+```
+
+## 13.[模块联邦](https://webpack.docschina.org/concepts/module-federation/)
+
+Webpack 5 增加了一个新的功能 "模块联邦"，它允许多个 webpack 构建一起工作。 从运行时的角度来看，多个构建的模块将表现得像一个巨大的连接模块图。 从开发者的角度来看，模块可以从指定的远程构建中导入，并以最小的限制来使用。
+
 
 **可参考文章：**
 
