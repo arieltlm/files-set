@@ -13,7 +13,15 @@
 - 尝试在不引入任何破坏性变化的情况下，清理那些在实现 v4 功能时处于奇怪状态的内部结构。
 - 试图通过现在引入突破性的变化来为未来的功能做准备，使其能够尽可能长时间地保持在 v5 版本上。
 
-## 2.rules中使用oneOf
+# 2.webpack安装
+
+* webpack4+中webpack和webpack-cli两个包分开，需要都安装
+* 可以通过移除package.json中的main来防止意外发布你的代码
+* Package.json中增加`private:true`，确保[安装包是私有的](https://v4.webpack.docschina.org/guides/getting-started/)？
+* npm文档[package-json](https://docs.npmjs.com/cli/v7/configuring-npm/package-json)
+* webpakc4+，没有webpack.config.js配置时，使用`npx webpack`会将我们的脚本 `src/index.js` 作为 [入口起点](https://v4.webpack.docschina.org/concepts/entry-points)，也会生成 `dist/main.js` 作为 [输出](https://v4.webpack.docschina.org/concepts/output)
+
+## 3.rules中使用oneOf
 
 默认情况下，文件会去匹配rules下面的每一个规则，即使已经匹配到某个规则了也会继续向下匹配。而如果将规则放在 oneOf 属性中，则一旦匹配到某个规则后，就停止匹配了
 
@@ -51,7 +59,7 @@ rules:[
 
 
 
-## 3.缓存
+## 4.缓存
 
 在编译打包时可对文件做缓存，有两种方式，一种是解析文件的loader自身带有缓存功能（如babel-loader,vue-loader），第二种就是使用专门的loader（cache-loader）。
  开启缓存后，对于未改动的文件，webpack直接从缓存中读取而不用再次编译，大大加快构建速度。
@@ -102,7 +110,7 @@ module.exports = {
 
 [Webpack5更新指南](https://www.jianshu.com/p/4e810ca6c132)
 
-## 4.Tree Shaking(树摇)
+## 5.Tree Shaking(树摇)
 
 
 
@@ -148,7 +156,7 @@ export default { add, print }
 比如说Webpack5.0默认设置中认为样式文件是有副作用的，所以引入样式文件虽然没有被使用（样式文件肯定是不使用的）也不会被去除，但是如果设置了sideEffects：false，就会进行Tree Shaking将代码去除。
 
 [官方描述-tree shaking变更](https://webpack.docschina.org/blog/2020-10-10-webpack-5-release/#nested-tree-shaking)
-## 5. webpack5 的静态资源不需要再加载loader了，内置好了
+## 6. webpack5 的静态资源不需要再加载loader了，内置好了
 
 ```js
  /* 
@@ -186,7 +194,7 @@ export default { add, print }
 
 以上五点参考[Webpack5.0学习总结-基础篇](https://juejin.cn/post/6971743815434993671)
 
-## 6.使用`webapck-dev-server`启动项目报错
+## 7.使用`webapck-dev-server`启动项目报错
 
 **Error: Cannot find module 'webpack-cli/bin/config-yargs'**
 
@@ -200,7 +208,7 @@ export default { add, print }
 
 webpack5.x和webpack-dev-server3.x不应该使用`webpack-dev-server`启动项目，而应该使用`webpack serve --open`启动项目
 
-## 7.模块热替换HRM
+## 8.模块热替换HRM
 
 ```js
 devServer: {
@@ -211,7 +219,7 @@ devServer: {
   target: "web",
 ```
 
-## 8.书写loader时获取options参数
+## 9.书写loader时获取options参数
 
 之前使用loader-utils包来获取；webpack5开始使用`this.getOptions()`
 
@@ -226,7 +234,7 @@ module.exports = function(source) {
 };
 ```
 
-## 9.merge
+## 10.merge
 
 ```js
 // 4.x版本
@@ -253,7 +261,7 @@ const config = webpackMerge.merge(defaultConfig, {
 export default config
 ```
 
-## 10. webpack插件编写
+## 11. webpack插件编写
 
 **插件的生命周期理解变化**：
 
@@ -352,7 +360,7 @@ compiler.hooks.emit.tap('AddWordPlugin', (params) => {
 
 
 
-## 11.node配置
+## 12.node配置
 
 > 这些选项可以配置是否 polyfill 或 mock 某些 [Node.js 全局变量](https://nodejs.org/docs/latest/api/globals.html)和模块。这可以使最初为 Node.js 环境编写的代码，在其他环境（如浏览器）中运行。
 >
@@ -391,7 +399,7 @@ resolve: {
 }
 
 ```
-## 12.入口文件运行时
+## 13.入口文件运行时
 
 入口文件描述符允许为每个入口文件指定一个 运行时代码。 当指定时，将创建一个以该名称命名的代码块，其中仅包含该条目的运行时代码。 当多个条目指定相同的运行时代码时，该块将包含所有这些入口文件的共同运行时代码。 这意味着它们可以在同一个 HTML 页面中一起使用
 
@@ -406,7 +414,7 @@ module.exports = {
 };
 ```
 
-## 13.[模块联邦](https://webpack.docschina.org/concepts/module-federation/)
+## 14.[模块联邦](https://webpack.docschina.org/concepts/module-federation/)
 
 Webpack 5 增加了一个新的功能 "模块联邦"，它允许多个 webpack 构建一起工作。 从运行时的角度来看，多个构建的模块将表现得像一个巨大的连接模块图。 从开发者的角度来看，模块可以从指定的远程构建中导入，并以最小的限制来使用。
 
